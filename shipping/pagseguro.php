@@ -104,7 +104,7 @@ EOF;
         // Calculando o valor e o peso total
         $total = 0;
         $preco = 0;
-        foreach ($wpsc_cart->cart_items as $item) {
+        foreach ((array)$wpsc_cart->cart_items as $item) {
             $preco += $item->total_price;
             $total += $this->converteValor($item->weight, 'gram')*$item->quantity;
         }

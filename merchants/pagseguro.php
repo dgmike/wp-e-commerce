@@ -14,7 +14,7 @@ if( get_option('transact_url')=="http://".$_SERVER["SERVER_NAME"].$_SERVER["REDI
 
 function gateway_pagseguro($seperator, $sessionid) 
 {
-    global $wpdb;
+    global $wpdb, $wpsc_cart;
     // Carregando os dados
     $cart = unserialize($_SESSION['wpsc_cart']);
     $options = array(
@@ -49,7 +49,7 @@ function gateway_pagseguro($seperator, $sessionid)
             "id"         => (string) $item->product_id,
             "descricao"  => $item->product_name,
             "quantidade" => $item->quantity,
-            "valor"      => $item->unit_price,
+            "valor"      => ($item->unit_price - $wpsc_cart->coupons_amount),
         );
     }
     $PGS = New pgs($options);

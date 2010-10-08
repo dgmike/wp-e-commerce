@@ -63,6 +63,11 @@ class PgsFrete
 
     private function _requestCurl($url, $post=null)
     {
+        $urlkey="URL:".md5("$url POST:$post");
+        if(isset($_SESSION[$urlkey])){
+          $this->_result = $_SESSION[$urlkey];
+          return;
+        }
         $parse = parse_url($url);
         $ch    = curl_init();
         if ('https'===$parse['scheme']) {
@@ -79,33 +84,20 @@ class PgsFrete
         $result = curl_exec($ch);
         curl_close($ch);
         $this->_result = $result;
+        $_SESSION[$urlkey]=$result;
     }
 
     public function gerar($CepOrigem, $Peso, $Valor, $Destino)
     {
-        $url = "https://pagseguro.uol.com.br/CalculaFrete.aspx";
-        $this->request($url."?CepOrigem={$CepOrigem}&Peso={$Peso}&Valor={$Valor}");
-        $result = $this->_result;
-        $pos = strpos($result, '<form name="Form1" method="post"');
-        $result = substr($result, $pos);
-        $pos = strpos($result, '</form>');
-        $result = substr($result, 0, $pos+8);
-
-        preg_match('@(name="__VIEWSTATE".+value="([^"]+)")@', $result, $matches);
-        $post = array(
-            '__VIEWSTATE'   => $matches[2],
-            'txtValor'      => $Valor,
-            'txtCepDestino' => $Destino,
-            'btnCalcular'   => 'Calcular'
-        );
-        $this->request($url, $post);
-        $resultado = $this->_result;
-        $resultado = preg_replace('/[\n\r\s]+/', ' ', $resultado);
-        preg_match('@(Sedex).+>R\$ ([\d,]+)<.+(PAC).+>R\$ ([\d,]+)<@', $resultado, $matches);
-        $return = array(
-          $matches[1] => $matches[2],
-          $matches[3] => $matches[4]
-        );
-        return $return;
+        $Peso=str_replace('.',',',$Peso);
+        $url = "https://pagseguro.uol.com.br/desenvolvedor/simulador_de_frete_calcular.jhtml?postalCodeFrom={$CepOrigem}&weight={$Peso}&value={$Valor}&postalCodeTo={$Destino}";
+        $this->request($url);
+        $result = split('\|',$this->_result);
+        $valores=array();
+        if($result[0]=='ok'){
+          $valores['Sedex']=$result[3];
+          $valores['PAC']=$result[4];
+        }
+        return $valores;
     }
 }
