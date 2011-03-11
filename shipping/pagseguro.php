@@ -114,11 +114,15 @@ EOF;
         $zipcode = preg_replace('@\D@', '', $zipcode);
         $zipcode = substr($zipcode, 0, 5).'-'.substr($zipcode, 5);
         $oFrete = $frete->gerar($cep, $total, $preco, $zipcode);
-        if (!$oFrete OR $oFrete == array('' => NULL,)) {
-            $oFrete = array(
-                'Frete Fixo' => $valor_fixo * $item->quantity,
-            );
+        
+        if($oFrete[0]=='nok') {
+            if ($valor_fixo>0) {
+                $oFrete = array(
+                    'Frete Fixo' => $valor_fixo * $item->quantity,
+                );
+            }
         }
+
         if ($meio['Sedex'] == '0') {
             unset($oFrete['Sedex']);
         }

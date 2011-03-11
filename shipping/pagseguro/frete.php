@@ -97,7 +97,10 @@ class PgsFrete
         if($result[0]=='ok'){
           $valores['Sedex']=$result[3];
           $valores['PAC']=$result[4];
+        }else{
+            return $result;
         }
+
         return $valores;
     }
 }
