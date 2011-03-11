@@ -4,9 +4,7 @@ include('retorno.php');
 function retorno_automatico ($dados) {
   print_r ($dados);
 }
-
 ?>
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 STRICT//EN"
   "http://www.w3.org/TR/xml1/DTD/xhtml1-strict.dtd">
 
@@ -17,6 +15,7 @@ function retorno_automatico ($dados) {
   </head>
   <body>
     <h1>Recibo personalizado</h1>
-    <p>Quando não viedem dados via POST, a biblioteca não deve chama função retorno_automatico, acima, nem executar die(), de modo que recibo HTML que eu escrevo aqui embaixo seja exibido automáticamente.</p>
+    <p>Quando não viedem dados via POST, a biblioteca não deve chama função retorno_automatico, 
+    acima, nem executar die(), de modo que recibo HTML que eu escrevo aqui embaixo seja exibido automáticamente.</p>
   </body>
 </html>

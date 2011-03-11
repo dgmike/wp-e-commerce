@@ -116,8 +116,7 @@ EOF;
         $oFrete = $frete->gerar($cep, $total, $preco, $zipcode);
         if (!$oFrete OR $oFrete == array('' => NULL,)) {
             $oFrete = array(
-                'Sedex' => $valor_fixo * $total,
-                'PAC'   => $valor_fixo * $total,
+                'Frete Fixo' => $valor_fixo * $item->quantity,
             );
         }
         if ($meio['Sedex'] == '0') {
