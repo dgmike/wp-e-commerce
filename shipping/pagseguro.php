@@ -29,7 +29,20 @@ class pagseguro
         if (!is_array($shipping)) {
             $shipping = array();
         }
-        extract($shipping+array('cep' => '','valor_fixo' => '', 'meio' => array('Sedex'=>'0', 'PAC'=> '0')));
+        extract($shipping+array(
+            'cep' => '',
+            'fixo_no_sedex' => '',
+            'fixo_no_pac' => '',
+            'fixo_sedex_up_kg' => '',
+            'fixo_pac_up_kg' => '',
+            'fixo_sedex_up_valor' => '',
+            'fixo_pac_up_valor' => '',
+            'meio' => array(
+                    'Sedex' => '0',
+                    'PAC' => '0'
+                )
+            )
+        );
         $checked_sedex = $meio['Sedex'] == '1' ? ' checked="checked" ' : '';
         $checked_pac = $meio['PAC'] == '1' ? ' checked="checked" ' : '';
         return <<<EOF
@@ -40,8 +53,29 @@ class pagseguro
         <input type="text" name="shipping[cep]" value="$cep" />
     </label><br />
     <label>
-        <span>Caso o módulo não consiga encontrar o CEP da pessoa, informe um valor fixo para o frete (por item):</span><br />
-        <input type="text" name="shipping[valor_fixo]" value="$valor_fixo" />
+        <span>Valor fixo caso não seja possível calcular o frete via SEDEX (por item):</span><br />
+        <input type="text" name="shipping[fixo_no_sedex]" value="$fixo_no_sedex" />
+    </label><br />
+    <label>
+        <span>Valor fixo caso não seja possível calcular o frete via encomenda normal (PAC) (por item):</span><br />
+        <input type="text" name="shipping[fixo_no_pac]" value="$fixo_no_pac" />
+    </label><br />
+    <label>
+        <span>Valor fixo para SEDEX caso o peso total dos produtos seja superior a 30kg (por item):</span><br />
+        <input type="text" name="shipping[fixo_sedex_up_kg]" value="$fixo_sedex_up_kg" />
+    </label><br />
+    <label>
+        <span>Valor fixo para PAC caso o peso total dos produtos seja superior a 30kg (por item):</span><br />
+        <input type="text" name="shipping[fixo_pac_up_kg]" value="$fixo_pac_up_kg" />
+    </label><br />
+
+    <label>
+        <span>Valor fixo para SEDEX caso o valor total dos produtos seja superior a R$ 10.000,00 (por item):</span><br />
+        <input type="text" name="shipping[fixo_sedex_up_valor]" value="$fixo_sedex_up_valor" />
+    </label><br />
+    <label>
+        <span>Valor fixo para PAC caso o valor total dos produtos seja superior a R$ 10.000,00 (por item):</span><br />
+        <input type="text" name="shipping[fixo_pac_up_valor]" value="$fixo_pac_up_valor" />
     </label><br />
     <input type="hidden" name="shipping[meio][Sedex]" value="0" />
     <input type="hidden" name="shipping[meio][PAC]" value="0" />
@@ -75,7 +109,19 @@ EOF;
             $shipping  = (array)get_option('pagseguro_shipping_configs');
             $submitted = (array)$_POST['shipping'];
             $values = array_merge($shipping, $submitted);
-            $values = array_intersect_key($values, array('cep' => true, 'valor_fixo' => true, 'meio' => array('Sedex' => '0', 'PAC' => '0')));
+            $values = array_intersect_key($values, array(
+                    'cep' => true,
+                    'fixo_no_sedex' => true,
+                    'fixo_no_pac' => true,
+                    'fixo_sedex_up_kg' => true,
+                    'fixo_pac_up_kg' => true,
+                    'fixo_sedex_up_valor' => true,
+                    'fixo_pac_up_valor' => true,
+                    'meio' => array(
+                            'Sedex' => '0',
+                            'PAC' => '0')
+                        )
+                    );
             update_option('pagseguro_shipping_configs', $values);
         }
         return true;
@@ -102,26 +148,19 @@ EOF;
         }
         extract($shipping+array('cep' => '','valor_fixo' => '', 'meio' => array('Sedex'=>'0', 'PAC'=> '0')));
         // Calculando o valor e o peso total
-        $total = 0;
+        $peso = 0;
         $preco = 0;
         foreach ((array)$wpsc_cart->cart_items as $item) {
             $preco += $item->total_price;
-            $total += $this->converteValor($item->weight, 'gram')*$item->quantity;
+            $peso += $this->converteValor($item->weight, 'gram')*$item->quantity;
         }
         $frete = new PgsFrete();
-        $total = number_format($total/1000, 2, '.', '');
+        $peso = number_format($peso/1000, 2, '.', '');
         $preco = number_format($preco, 2, ',', '');
         $zipcode = preg_replace('@\D@', '', $zipcode);
-        $zipcode = substr($zipcode, 0, 5).'-'.substr($zipcode, 5);
-        $oFrete = $frete->gerar($cep, $total, $preco, $zipcode);
-        
-        if($oFrete[0]=='nok') {
-            if ($valor_fixo>0) {
-                $oFrete = array(
-                    'Frete Fixo' => $valor_fixo * $item->quantity,
-                );
-            }
-        }
+        //$zipcode = substr($zipcode, 0, 5).'-'.substr($zipcode, 5);
+
+        $oFrete = $frete->gerar($cep, $peso, $preco, $zipcode);
 
         if ($meio['Sedex'] == '0') {
             unset($oFrete['Sedex']);
@@ -129,32 +168,34 @@ EOF;
         if ($meio['PAC'] == '0') {
             unset($oFrete['PAC']);
         }
+
         return $oFrete;
     }
 
     public function converteValor($weight, $unit)
     {
-		switch($unit) {
-			case "kilogram":
-			$weight = $weight * 0.45359237;
-			break;
-			
-			case "gram":
-			$weight = $weight * 453.59237;
-			break;
-		
-			case "once":
-			case "ounces":
-			$weight = $weight * 16;
-			break;
-			
-			default:
-			$weight = $weight;
-			break;
-		}
+        switch($unit) {
+            case "kilogram":
+            $weight = $weight * 0.45359237;
+            break;
+
+            case "gram":
+            $weight = $weight * 453.59237;
+            break;
+
+            case "once":
+            case "ounces":
+            $weight = $weight * 16;
+            break;
+
+            default:
+            $weight = $weight;
+            break;
+        }
         return $weight;
     }
 }
 
 $pagseguro = new pagseguro();
 $wpsc_shipping_modules[$pagseguro->getInternalName()] = $pagseguro;
+
