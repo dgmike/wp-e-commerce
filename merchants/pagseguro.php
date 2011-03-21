@@ -19,7 +19,7 @@ function gateway_pagseguro($seperator, $sessionid)
     $cart = unserialize($_SESSION['wpsc_cart']);
     $options = array(
         'email_cobranca' => get_option('pagseguro_email'),
-        'ref_transacao'  => $_SESSION['order_id'],
+        'ref_transacao'  => $cart->unique_id,   //$_SESSION['order_id'],
         'encoding'       => 'utf-8',
         'item_frete_1'   => number_format(($cart->total_tax + $cart->base_shipping) * 100, 0, '', ''),
     );
@@ -43,6 +43,7 @@ function gateway_pagseguro($seperator, $sessionid)
     );
     // Usando a session, isso é correto
     $cart = $cart->cart_items;
+    
     $produtos = array();
     foreach($cart as $item) {
         $produtos[] = array(
@@ -50,8 +51,10 @@ function gateway_pagseguro($seperator, $sessionid)
             "descricao"  => $item->product_name,
             "quantidade" => $item->quantity,
             "valor"      => $item->unit_price,
+            "peso"       => intval(round($item->weight))
         );
     }
+
     $PGS = New pgs($options);
     $PGS->cliente($cliente);	
     $PGS->adicionar($produtos);
@@ -67,7 +70,7 @@ function gateway_pagseguro($seperator, $sessionid)
     $_SESSION["pagseguro_id"] = $sessionid;
     echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/security/webpagamentos/webpagto.aspx" method="post">',
         $form,
-        '<script>window.onload=function(){form_pagseguro.submit();}</script>';
+        '<!--script>window.onload=function(){form_pagseguro.submit();}</script-->';
     exit();
 }
 
