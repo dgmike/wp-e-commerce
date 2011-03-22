@@ -154,6 +154,7 @@ EOF;
             $preco += $item->total_price;
             $peso += $this->converteValor($item->weight, 'gram')*$item->quantity;
         }
+        
         $frete = new PgsFrete();
         $peso = number_format($peso/1000, 2, '.', '');
         $preco = number_format($preco, 2, ',', '');

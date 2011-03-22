@@ -17,6 +17,7 @@ function gateway_pagseguro($seperator, $sessionid)
     global $wpdb;
     // Carregando os dados
     $cart = unserialize($_SESSION['wpsc_cart']);
+
     $options = array(
         'email_cobranca' => get_option('pagseguro_email'),
         'ref_transacao'  => $cart->unique_id,   //$_SESSION['order_id'],
@@ -51,7 +52,7 @@ function gateway_pagseguro($seperator, $sessionid)
             "descricao"  => $item->product_name,
             "quantidade" => $item->quantity,
             "valor"      => $item->unit_price,
-            "peso"       => intval(round($item->weight))
+            "peso"       => intval(round($item->weight * 453.59237))
         );
     }
 
@@ -124,3 +125,4 @@ function form_pagseguro()
     $output .= "</tr>\n\r";
     return $output;
 }
+
