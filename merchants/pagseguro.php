@@ -70,7 +70,7 @@ function gateway_pagseguro($seperator, $sessionid)
     $_SESSION["pagseguro_id"] = $sessionid;
     echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/security/webpagamentos/webpagto.aspx" method="post">',
         $form,
-        '<!--script>window.onload=function(){form_pagseguro.submit();}</script-->';
+        '<script>window.onload=function(){form_pagseguro.submit();}</script>';
     exit();
 }
 
