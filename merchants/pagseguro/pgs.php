@@ -7,9 +7,9 @@ class pgs {
   /**
    * pgs
    *
-   * Função de inicialização
-   * você pode passar os parâmetros padrão alterando as informações padrão como o tipo de moeda ou
-   * o tipo de carrinho (próprio ou do pagseguro)
+   * Funï¿½ï¿½o de inicializaï¿½ï¿½o
+   * vocï¿½ pode passar os parï¿½metros padrï¿½o alterando as informaï¿½ï¿½es padrï¿½o como o tipo de moeda ou
+   * o tipo de carrinho (prï¿½prio ou do pagseguro)
    *
    * Ex:
    * <code>
@@ -22,7 +22,7 @@ class pgs {
    * </code>
    *
    * @access public
-   * @param array $args    Array associativo contendo as configurações que você deseja alterar
+   * @param array $args    Array associativo contendo as configuraï¿½ï¿½es que vocï¿½ deseja alterar
    * @return               void
    */
   function pgs($args = array()) {
@@ -52,21 +52,20 @@ class pgs {
    * Adiciona um item ao carrinho
    *
    * O elemento adicionado deve ser um array associativo com as seguintes chaves
-   * id         => string com até 100 caracteres
-   * descricao  => string com até 100 caracteres
+   * id         => string com atï¿½ 100 caracteres
+   * descricao  => string com atï¿½ 100 caracteres
    * quantidade => integer
    * valor      => integer ou float
-   * peso       => integer (opcional) coloque o peso (em gramas) do produto, caso seja um peso único para todos os
-   *               produtos é preferivel inplantá-lo no new pgs(array('item_peso_1' => 1300))
-   * frete      => integer ou float (opcional) coloque o valor do frete, caso seja um frete único
-   *               para todos os produtos é preferivel inplantá-lo no new pgs(array('item_frete_1' => 30))
+   * peso       => integer (opcional) coloque o peso (em gramas) do produto, caso seja um peso ï¿½nico para todos os
+   *               produtos ï¿½ preferivel inplantï¿½-lo no new pgs(array('item_peso_1' => 1300))
+   * frete      => integer ou float (opcional) coloque o valor do frete, caso seja um frete ï¿½nico
+   *               para todos os produtos ï¿½ preferivel inplantï¿½-lo no new pgs(array('item_frete_1' => 30))
    *
    * @access public
-   * @param array $item O elemento que será adicionado
-   * @return object pgs O próprio objeto para que possa ser concatenado a outro comando dele mesmo
+   * @param array $item O elemento que serï¿½ adicionado
+   * @return object pgs O prï¿½prio objeto para que possa ser concatenado a outro comando dele mesmo
    */
   function adicionar($item) {
-
     if ('array' !== gettype($item))
       return $this->error("Item precisa ser um array.");
     if(isset($item[0]) && 'array' === gettype($item[0])){
@@ -79,14 +78,13 @@ class pgs {
     }
 
     $tipos=array(
-      "id" =>         array(1,"string",                '@\w@'         ),
+      "id" =>         array(1,"string,integer",        '@\w@'         ),
       "quantidade" => array(1,"string,integer",        '@^\d+$@'      ),
       "valor" =>      array(1,"double,string,integer", '@^\d*\.?\d+$@'),
       "descricao" =>  array(1,"string",                '@\w@'         ),
       "frete" =>      array(0,"string,integer",        '@^\d+$@'      ),
       "peso" =>       array(0,"string,integer",        '@^\d+$@'      ),
     );
-
     foreach($tipos as $elm=>$valor){
       list($obrigatorio,$validos,$regexp)=$valor;
       if(isset($item[$elm])){
@@ -98,7 +96,6 @@ class pgs {
         return $this->error("O item adicionado precisa conter $elm");
       }
     }
-
     $this->_itens[] = $item;
     return $this;
   }
@@ -111,13 +108,13 @@ class pgs {
    * Ex:
    * <code>
    * array (
-   *   'nome'   => 'José de Arruda',
+   *   'nome'   => 'Josï¿½ de Arruda',
    *   'cep'    => '12345678',
    *   'end'    => 'Rua dos Tupiniquins',
    *   'num'    => 37,
    *   'compl'  => 'apto 507',
    *   'bairro' => 'Sto Amaro',
-   *   'cidade' => 'São Camilo',
+   *   'cidade' => 'Sï¿½o Camilo',
    *   'uf'     => 'SC',
    *   'pais'   => 'Brasil',
    *   'ddd'    => '48',
@@ -127,7 +124,7 @@ class pgs {
    * </code>
    *
    * @access public
-   * @param array $args Dados sobre o cliente, se não forem passados os dados corretos,
+   * @param array $args Dados sobre o cliente, se nï¿½o forem passados os dados corretos,
    * o pagseguro se encarrega de perguntar os dados ao cliente
    * @return void
    */
@@ -139,24 +136,24 @@ class pgs {
    *
    * mostra
    *
-   * Mostra o formulário de envio de post do PagSeguro
+   * Mostra o formulï¿½rio de envio de post do PagSeguro
    *
-   * Após configurar o objeto, você pode usar este método para mostrando assim o
-   * formulário com todos os inputs necessários para enviar ao pagseguro.
+   * Apï¿½s configurar o objeto, vocï¿½ pode usar este mï¿½todo para mostrando assim o
+   * formulï¿½rio com todos os inputs necessï¿½rios para enviar ao pagseguro.
    *
    * <code>
    * array (
-   *   'print'       => false,        // Cancelará o evento de imprimir na tela, retornando o formulário
-   *   'open_form'   => false,        // Não demonstra a tag <form target="pagseguro" ... >
-   *   'close_form'  => false,        // Não demonstra a tag </form>
-   *   'show_submit' => false,        // Não mostra o botão de submit (imagem ou um dos 5 do pagseguro)
-   *   'img_button'  => 'imagem.jpg', // Usa a imagem (url) para formar o botão de submit
-   *   'btn_submit'  => 1,            // Mostra um dos 5 botões do pagseguro no botão de submit
+   *   'print'       => false,        // Cancelarï¿½ o evento de imprimir na tela, retornando o formulï¿½rio
+   *   'open_form'   => false,        // Nï¿½o demonstra a tag <form target="pagseguro" ... >
+   *   'close_form'  => false,        // Nï¿½o demonstra a tag </form>
+   *   'show_submit' => false,        // Nï¿½o mostra o botï¿½o de submit (imagem ou um dos 5 do pagseguro)
+   *   'img_button'  => 'imagem.jpg', // Usa a imagem (url) para formar o botï¿½o de submit
+   *   'btn_submit'  => 1,            // Mostra um dos 5 botï¿½es do pagseguro no botï¿½o de submit
    * )
    * </code>
    *
    * @access public
-   * @param array $args Array associativo contendo as configurações que você deseja alterar
+   * @param array $args Array associativo contendo as configuraï¿½ï¿½es que vocï¿½ deseja alterar
    */
   function mostra ($args=array()) {
     $default = array (
@@ -171,7 +168,7 @@ class pgs {
     $_input = '  <input type="hidden" name="%s" value="%s"  />';
     $_form = array();
     if ($args['open_form'])
-      $_form[] = '<form target="pagseguro" action="https://pagseguro.uol.com.br/security/webpagamentos/webpagto.aspx" method="post">';
+      $_form[] = '<form target="pagseguro" action="https://pagseguro.uol.com.br/checkout/checkout.jhtml" method="post">';
     foreach ($this->_config as $key=>$value)
       $_form[] = sprintf ($_input, $key, $value);
     foreach ($this->_cliente as $key=>$value)
@@ -183,6 +180,7 @@ class pgs {
       'quantidade' => 'item_quant',
     );
     $i=1;
+
     foreach ($this->_itens as $item) {
       foreach ($assoc as $key => $value) {
         $sufixo=($this->_config['tipo']=="CBR")?'':'_'.$i;

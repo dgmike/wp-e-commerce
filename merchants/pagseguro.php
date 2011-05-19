@@ -27,17 +27,21 @@ function gateway_pagseguro($seperator, $sessionid)
     // Dados do cliente
     $_cliente = $_POST["collected_data"];
     list($ddd,$telefone)   = trataTelefone($_cliente[17]);
-    list($end,$num,$compl) = trataEndereco($_cliente[4]);
+
+    $street=explode(',',$_cliente[4]);            
+    $street = array_slice(array_merge($street, array("","","","")),0,4); 
+    list($rua, $numero, $complemento, $bairro) = $street;    
+    
     $cliente = array (
         'nome'   => $_POST["collected_data"][2] . " " . $_cliente[3],
         'cep'    => preg_replace("/[^0-9]/","", $_cliente[7]),
-        'end'    => $end,
-        'num'    => $num,
-        'compl'  => $compl,
-        'bairro' => '',
-        'cidade' => '',
-        'uf'     => '',
-        'pais'   => 'Brasil',
+        'end'    => $rua,
+        'num'    => $numero,
+        'compl'  => $complemento,
+        'bairro' => $bairro,
+        'cidade' => $_cliente[5],
+        'uf'     => $_cliente[14],
+        'pais'   => $_cliente[6][0],
         'ddd'    => $ddd,
         'tel'    => $telefone,
         'email'  => $_cliente[8]
@@ -69,7 +73,7 @@ function gateway_pagseguro($seperator, $sessionid)
     $form = $PGS->mostra($mostra);
 
     $_SESSION["pagseguro_id"] = $sessionid;
-    echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/security/webpagamentos/webpagto.aspx" method="post">',
+    echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/checkout/checkout.jhtml" method="post">',
         $form,
         '<script>window.onload=function(){form_pagseguro.submit();}</script>';
     exit();
@@ -125,4 +129,3 @@ function form_pagseguro()
     $output .= "</tr>\n\r";
     return $output;
 }
-

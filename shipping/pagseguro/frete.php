@@ -112,27 +112,20 @@ class PgsFrete {
                     $valores['PAC']=$result[4];
                 }else{
                     // Cond. erro cep
-                    //$fixo_no_sedex = $module->getConfigData('fixo_no_sedex');
                     $valores['Sedex']=$fixo_no_sedex;
-                    //$fixo_no_pac = $module->getConfigData('fixo_no_pac');
                     $valores['PAC']=$fixo_no_pac;
                 }
             }else{
                 // Cond. Peso > 30kg
-                //$fixo_sedex_up_kg = $module->getConfigData('fixo_sedex_up_kg');
                 $valores['Sedex']=$fixo_sedex_up_kg;
-                //$fixo_pac_up_kg = $module->getConfigData('fixo_pac_up_kg');
                 $valores['PAC']=$fixo_pac_up_kg;
             }
         }else{
             // Cond. valor > 10.000
-            //$fixo_sedex_up_valor = $module->getConfigData('fixo_sedex_up_valor');
             $valores['Sedex']=$fixo_sedex_up_valor;
-            //$fixo_pac_up_valor = $module->getConfigData('fixo_pac_up_valor');
             $valores['PAC']=$fixo_pac_up_valor;
         }
         return $valores;
 
     }
 }
-

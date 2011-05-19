@@ -150,11 +150,12 @@ EOF;
         // Calculando o valor e o peso total
         $peso = 0;
         $preco = 0;
+
         foreach ((array)$wpsc_cart->cart_items as $item) {
             $preco += $item->total_price;
             $peso += $this->converteValor($item->weight, 'gram')*$item->quantity;
         }
-        
+
         $frete = new PgsFrete();
         $peso = number_format($peso/1000, 2, '.', '');
         $preco = number_format($preco, 2, ',', '');
@@ -199,4 +200,3 @@ EOF;
 
 $pagseguro = new pagseguro();
 $wpsc_shipping_modules[$pagseguro->getInternalName()] = $pagseguro;
-
