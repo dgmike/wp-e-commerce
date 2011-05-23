@@ -1,11 +1,11 @@
-Módulo Wp-e-commerce Versão 3.2.1
+Módulo Wp-e-commerce Versão 3.2.2
 
 Instalação do módulo PagSeguro para Wp-ecommerce
 
 === Pré-requisitos ===
 
 - WordPress 3.1
-- Wp-e-commerce 3.7.x
+- Wp-e-commerce 3.8.x
 
 === Instalação ===
 
@@ -13,10 +13,10 @@ Visite: http://pagseguro.visie.com.br/plataforma/wordpress/wp-e-commerce/
 
 === Change log ===
 
-19/05/2011
-Retorno Tratamento de dados de usuário e atualização de url de pagamento
-- Separando os dados do endereço do usuários onde o formato padrão utilizado
-é: Rua, Número, Complement, Bairro. Estas informações são coletadas do campo
-"Address" e enviadas para o pagseguro separadamente, pois o wp-ecommerce não
-dispõe de campos para todas estas informações.
+23/05/2011
+- Correção no cálculo de frete
+
+20/05/2011
+- Disponibilizado nova versão do PagSeguro wp-e-commerce 3.8.x
+
 

@@ -181,13 +181,7 @@ class RetornoPagSeguro {
           'ProdExtras'      => (double) (str_replace(',', '.', $post["ProdExtras_{$i}"])),
         );
       }
-      retorno_automatico (
-        $post['VendedorEmail'], $post['TransacaoID'], $post['Referencia'], $post['TipoFrete'],
-        $post['ValorFrete'], $post['Anotacao'], $post['DataTransacao'], $post['TipoPagamento'],
-        $post['StatusTransacao'], $post['CliNome'], $post['CliEmail'], $post['CliEndereco'],
-        $post['CliNumero'], $post['CliComplemento'], $post['CliBairro'], $post['CliCidade'],
-        $post['CliEstado'], $post['CliCEP'], $post['CliTelefone'], $produtos, $post['NumItens']
-      );
+      retorno_automatico ((object) $post);
     }
     return $confirma;
   }

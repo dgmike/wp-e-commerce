@@ -57,10 +57,10 @@ class PgsFrete {
 
     private function _requestCurl($url, $post=null) {
         $urlkey="URL:".md5("$url POST:$post");
-        if(isset($_SESSION[$urlkey])) {
-            $this->_result = $_SESSION[$urlkey];
-            return;
-        }
+#        if(isset($_SESSION[$urlkey])) {
+#            $this->_result = $_SESSION[$urlkey];
+#            return;
+#        }
         $parse = parse_url($url);
         $ch    = curl_init();
         if ('https'===$parse['scheme']) {

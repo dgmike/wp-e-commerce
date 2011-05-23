@@ -2,8 +2,9 @@
 include('retorno.php');
 
 function retorno_automatico ($dados) {
-  print_r ($dados);
+    print_r ($dados);
 }
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 STRICT//EN"
   "http://www.w3.org/TR/xml1/DTD/xhtml1-strict.dtd">

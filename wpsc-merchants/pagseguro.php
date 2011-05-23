@@ -10,17 +10,19 @@ $nzshpcrt_gateways[$num]['function'] = 'gateway_pagseguro';
 $nzshpcrt_gateways[$num]['form'] = "form_pagseguro";
 $nzshpcrt_gateways[$num]['submit_function'] = "submit_pagseguro";
 
-if( get_option('transact_url')=="http://".$_SERVER["SERVER_NAME"].$_SERVER["REDIRECT_URL"]){ transact_url();}
+
+//if( get_option('transact_url')=="http://".$_SERVER["SERVER_NAME"].$_SERVER["REDIRECT_URL"]){ transact_url();}
 
 function gateway_pagseguro($seperator, $sessionid) 
 {
     global $wpdb;
+
     // Carregando os dados
     $cart = unserialize($_SESSION['wpsc_cart']);
 
     $options = array(
         'email_cobranca' => get_option('pagseguro_email'),
-        'ref_transacao'  => $cart->unique_id,   //$_SESSION['order_id'],
+        'ref_transacao'  => $sessionid,
         'encoding'       => 'utf-8',
         'item_frete_1'   => number_format(($cart->total_tax + $cart->base_shipping) * 100, 0, '', ''),
     );
@@ -83,20 +85,14 @@ function transact_url()
 {
     if(!function_exists("retorno_automatico")) {
         define ('TOKEN', get_option("pagseguro_token"));
-        function retorno_automatico (
-            $VendedorEmail, $TransacaoID, $Referencia, $TipoFrete,
-            $ValorFrete, $Anotacao, $DataTransacao, $TipoPagamento,
-            $StatusTransacao, $CliNome, $CliEmail, $CliEndereco,
-            $CliNumero, $CliComplemento, $CliBairro, $CliCidade,
-            $CliEstado, $CliCEP, $CliTelefone, $produtos, $NumItens
-        )
+        function retorno_automatico ($post)
         {
             global $wpdb;
-            switch($StatusTransacao) {
-            case "Completo":case "Aprovado":
-                $sql = "UPDATE `".$wpdb->prefix . "purchase_logs` SET `processed` = '2' WHERE id=" . $Referencia;
-                $wpdb->query($sql);  
-            case "Cancelado":
+            switch(strtolower($post->StatusTransacao)) {
+            case "completo":case "aprovado":
+                $sql = "UPDATE `".WPSC_TABLE_PURCHASE_LOGS."` SET `processed`= '2' WHERE `sessionid`=".$post->Referencia;
+                $wpdb->query($sql);
+            case "cancelado":
                 break;
             }
         }
@@ -129,3 +125,51 @@ function form_pagseguro()
     $output .= "</tr>\n\r";
     return $output;
 }
+
+##function retorno_automatico($post){
+##    global $wpdb;
+##    
+##}
+#class PagSeguro_StandardController extends wpsc_merchant {
+#	/**
+#	* parse_gateway_notification method, receives data from the payment gateway
+#	* @access private
+#	*/
+#	function retornoPagSeguro($post) {
+#	    global $wpdb;
+
+#	    $version = str_replace(".","",WPSC_PRESENTABLE_VERSION);
+
+#		/// PayPal first expects the IPN variables to be returned to it within 30 seconds, so we do this first.
+##		$paypal_url = get_option('paypal_multiple_url');
+##		$received_values = array();
+##		$received_values['cmd'] = '_notify-validate';
+##  		$received_values += $_POST;
+##		$options = array(
+##			'timeout' => 5,
+##			'body' => $received_values,
+##			'user-agent' => ('WP e-Commerce/'.WPSC_PRESENTABLE_VERSION)
+##		);
+
+##		$response = wp_remote_post($paypal_url, $options);
+#		if (in_array(strtolower($post->StatusTransacao), array('completo', 'aprovado'))) {
+
+#		
+#			$this->paypal_ipn_values = $received_values;
+#			$this->session_id = $post->Referencia;
+#			
+#			$this->set_purchase_processed_by_sessionid(3);
+
+#		} else {
+#			//exit("IPN Request Failure");
+#		}
+#	}
+#}
+
+function pgs_return() {
+    if ($_SERVER['REQUEST_METHOD']=='POST' and $_POST) {
+        if( get_option('transact_url')=="http://".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"]){ transact_url();}
+    }
+}
+add_action('init', 'pgs_return');
+
