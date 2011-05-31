@@ -1,4 +1,4 @@
-Módulo Wp-e-commerce Versão 3.2.2
+Módulo Wp-e-commerce Versão 3.2.3
 
 Instalação do módulo PagSeguro para Wp-ecommerce
 
@@ -12,6 +12,9 @@ Instalação do módulo PagSeguro para Wp-ecommerce
 Visite: http://pagseguro.visie.com.br/plataforma/wordpress/wp-e-commerce/
 
 === Change log ===
+
+31/05/2011
+- Correção das informações que são enviadas para o pagseguro
 
 23/05/2011
 - Correção no cálculo de frete
