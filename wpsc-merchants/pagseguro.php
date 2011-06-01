@@ -3,109 +3,113 @@ $_GET["sessionid"] = $_GET["sessionid"]=="" ? $_SESSION["pagseguro_id"] : $_GET[
 require_once("pagseguro/pgs.php");
 require_once("pagseguro/tratadados.php");
 
-$nzshpcrt_gateways[$num] = array(
-	'name' => 'PagSeguro',
-	'api_version' => 2.0,
-	'class_name' => 'wpsc_merchant_pagseguro',
-	'has_recurring_billing' => true,
-	'display_name' => 'PagSeguro',	
-	'wp_admin_cannot_cancel' => false,
-	'form' => 'form_pagseguro',
-	'internalname' => 'wpsc_merchant_pagseguro',
-);
+$nzshpcrt_gateways[$num]['name'] = 'PagSeguro';
+$nzshpcrt_gateways[$num]['admin_name'] = 'PagSeguro';
+$nzshpcrt_gateways[$num]['internalname'] = 'pagseguro';
+$nzshpcrt_gateways[$num]['function'] = 'gateway_pagseguro';
+$nzshpcrt_gateways[$num]['form'] = "form_pagseguro";
+$nzshpcrt_gateways[$num]['submit_function'] = "submit_pagseguro";
+
 /**
- * wpsc_merchant_pagseguro
+ * _process_gateway_pagseguro
  *
- * Classe para comunicação do módulo com o gateway de pagamento
+ * Tratamento dos dados antes de enviar para o gateway de pagamento.
+ * Exibe o formulário com os dados para envio das informações requeridas
+ * @param long $sessionid ID de referência para o pedido
  *
- */ 
-class wpsc_merchant_pagseguro extends wpsc_merchant 
+ */
+function gateway_pagseguro($seperator, $sessionid) 
 {
-    /**
-     * _process_gateway_pagseguro
-     *
-     * Tratamento dos dados antes de enviar para o gateway de pagamento.
-     * Exibe o formulário com os dados para envio das informações requeridas
-     * @param long $sessionid ID de referência para o pedido
-     *
-     */
-    function _process_gateway_pagseguro($sessionid) 
-    {
-        global $wpsc_cart;
+    global $wpdb, $wpsc_cart;
 
-        // Carregando os dados
-        $cart = $wpsc_cart;
-
-        $options = array(
-            'email_cobranca' => get_option('pagseguro_email'),
-            'ref_transacao'  => $sessionid,
-            'encoding'       => 'utf-8',
-            'item_frete_1'   => number_format(($cart->total_tax + $cart->base_shipping) * 100, 0, '', ''),
-        );
-
-        // Dados do cliente
-        $_client = $this->cart_data['billing_address'];
-
-        $street = explode(',', $_client['address']);         
-        $street = array_slice(array_merge($street, array("", "", "", "")), 0, 4); 
-        list($rua, $numero, $complemento, $bairro) = $street;    
-
-        $client = array (
-            'nome'   => $_client['first_name'] . " " . $_client['last_name'],
-            'cep'    => preg_replace("/[^0-9]/","", $_client['post_code']),
-            'end'    => $rua,
-            'num'    => $numero,
-            'compl'  => $complemento,
-            'bairro' => $bairro,
-            'cidade' => $_client['city'],
-            'uf'     => $_client['state'],
-            'pais'   => $_client['country'],
-            'email'  => $this->cart_data['email_address']
-        );
-        
-        $products = array();
-        foreach($cart->cart_items as $item) {
-            $products[] = array(
-                "id"         => (string) $item->product_id,
-                "descricao"  => $item->product_name,
-                "quantidade" => $item->quantity,
-                "valor"      => $item->unit_price,
-                "peso"       => intval(round($item->weight * 453.59237))
-            );
-        }
-
-        $PGS = New pgs($options);
-        $PGS->cliente($client);	
-        $PGS->adicionar($products);
-        $show = array(
-            "btn_submit"  => 0,
-            "print"       => false, 
-            "open_form"   => false,
-            "show_submit" => false
-        );
-
-        $form = $PGS->mostra($show);
-
-        $_SESSION["pagseguro_id"] = $sessionid;
-        echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/checkout/checkout.jhtml" method="post">',
-            $form,
-            '<script>window.onload=function(){form_pagseguro.submit();}</script>';
-        exit();
-    }
+    // Carregando os dados
+    $cart = unserialize($_SESSION['wpsc_cart']);
     
-    /*
-     * submit()
-     *
-     * Chamado após a confirmação do pedido na pág. de checkout
-     * @return bool true
-     *
-     */
-    function submit() 
-    {
-        $this->_process_gateway_pagseguro($this->cart_data['session_id']);
-        //$this->go_to_transaction_results($this->cart_data['session_id']);
-        return true;
+    $options = array(
+        'email_cobranca' => get_option('pagseguro_email'),
+        'ref_transacao'  => $cart->unique_id,   //$_SESSION['order_id'],
+        'encoding'       => 'utf-8',
+        'item_frete_1'   => number_format(($cart->total_tax + $cart->base_shipping) * 100, 0, '', ''),
+    );
+
+    $checkout_form_sql = "SELECT id, unique_name FROM `".WPSC_TABLE_CHECKOUT_FORMS."`";
+    $checkout_form = $wpdb->get_results($checkout_form_sql,ARRAY_A) ;
+    
+    // Pega a referência dos campos de formulário definido pelo usuário                        
+    foreach($checkout_form as $item){
+        $collected_data[$item['unique_name']] = $item['id'];
+    }        
+
+    // Pega os dados do post
+    $_client = $_POST["collected_data"];
+
+    list($phone_prefix, $phone)   = trataTelefone($_client[if_isset($collected_data['billingphone'])]);
+
+    $street = explode(',', $_client[if_isset($collected_data['billingaddress'])]);         
+    $street = array_slice(array_merge($street, array("", "", "", "")), 0, 4); 
+    list($rua, $numero, $complemento, $bairro) = $street;    
+
+    $client = array (
+        'nome'   => $_client['first_name'] . " " . $_client[if_isset($collected_data['billingfirstname'])],
+        'cep'    => preg_replace("/[^0-9]/","", $_client[if_isset($collected_data['billingpostcode'])]),
+        'end'    => $rua,
+        'num'    => $numero,
+        'compl'  => $complemento,
+        'bairro' => $bairro,
+        'cidade' => $_client[if_isset($collected_data['billingcity'])],
+        'uf'     => $_client[if_isset($collected_data['billingstate'])],
+        'pais'   => $_client[if_isset($collected_data['billingcountry'])][0],
+        'ddd'    => $phone_prefix,
+        'tel'    => $phone,  
+        'email'  => $_client[if_isset($collected_data['billingemail'])]
+    );
+
+    $products = array();
+    foreach($cart->cart_items as $item) {
+        $products[] = array(
+            "id"         => (string) $item->product_id,
+            "descricao"  => $item->product_name,
+            "quantidade" => $item->quantity,
+            "valor"      => $item->unit_price,
+            "peso"       => intval(round($item->weight * 453.59237))
+        );
     }
+
+    $PGS = New pgs($options);
+    $PGS->cliente($client);	
+    $PGS->adicionar($products);
+    $show = array(
+        "btn_submit"  => 0,
+        "print"       => false, 
+        "open_form"   => false,
+        "show_submit" => false
+    );
+
+    $form = $PGS->mostra($show);
+
+    $_SESSION["pagseguro_id"] = $sessionid;
+    echo '<form id="form_pagseguro" action="https://pagseguro.uol.com.br/checkout/checkout.jhtml" method="post">',
+        $form,
+        '<script>window.onload=function(){form_pagseguro.submit();}</script>';
+
+    // Esvazia o carrinho 
+    $wpsc_cart->empty_cart();        
+    exit();
+}
+
+function if_isset(&$a, $b = ''){
+    return isset($a) ? $a : $b;
+}
+
+function submit_pagseguro() 
+{
+    if($_POST['pagseguro_email'] != null) {
+        update_option('pagseguro_email', $_POST['pagseguro_email']);
+    }
+    if($_POST['pagseguro_token'] != null) {
+        update_option('pagseguro_token', $_POST['pagseguro_token']);
+    }
+    return true;
 }
 
 /**

@@ -12,6 +12,9 @@ Instalação do módulo PagSeguro para Wp-ecommerce
 Visite: http://pagseguro.visie.com.br/plataforma/wordpress/wp-e-commerce/
 
 === Change log ===
+01/06/2011
+- Passando mais informações do usuário para o pagseguro, agora pegando
+os dados do comprador direto da tabela e relacionando com os dados do post
 
 31/05/2011
 - Correção das informações que são enviadas para o pagseguro
